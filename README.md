@@ -35,6 +35,8 @@ int main(int argc, char **argv)
     Bitset *bitset;
     // This is the number of bits that we want to store
     int n = 10;
+
+    // Create the bitset, this is the real initialization of bitset.
     create_bitset(bitset, n);
 
     // Access to the number of bits that we want to store
@@ -46,6 +48,20 @@ int main(int argc, char **argv)
     // n=10, the default type of word used is char, so we have 10 / 8 = 1.xxx
     // so the results is 2(we round always for excess).
     printf("%d\n", bitset->capacity);
+
+    // Put all the bits of the bitset to true(1)
+    all_true(bitset);
+
+    // Put all the bits of the bitset to false(0)
+    all_false(bitset);
+
+    // Put the i-th bit to true(1)
+    set_true(bitset, i);
+    // Put the i-th bit to false(0)
+    set_false(bitset, i);
+
+    // Get the value of i-th bit and print it
+    printf("%d\n", get_bit(bitset, i));
 
     return 0;
 }
