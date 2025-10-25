@@ -35,7 +35,8 @@ int main()
     // printf("\n");
     // // printBitset(bitset);
 
- 
+
+    
     // T: TODO implement this idea for a stack allocated bitset.
     // T: NOTE you can use this trick even to allocate multiple bitset like a single piece of memory
     const unsigned int n = 10;
@@ -56,6 +57,29 @@ int main()
     set_false(p, 2 * WORD_SIZE + 2);
     print_word_bitset(p->packed_data[2]);
     printf("\n");
+
+    printf("print bitset\n");
+    print_bitset(p);
+
+    const unsigned int n2 = 10;
+    const unsigned int n_char_words_2 = 2 * 4 + n2 * sizeof(WORD_TYPE);
+    char buffer2[n_char_words_2];
+    Bitset *p_2 = (Bitset*)buffer2;
+    p->capacity = n2;
+    p->size = n2 * WORD_SIZE;
+
+    all_true(p_2);
+    printf("and between p, p_2\n");
+    and(p, p_2);
+    print_bitset(p);
+
+    printf("or between p, p_2\n");
+    or(p, p_2);
+    print_bitset(p);
+    
+    printf("not of p\n");
+    not(p);
+    print_bitset(p);
 
     return 0;
 }

@@ -1,10 +1,6 @@
 #ifndef _BITSET
 #define _BITSET
-
-
-
-
-
+#include "custom_assert.h"
 //==================================================================================================================================
 //----------------------------------------------------------------------------------------------------------------------------------
 // BITSET
@@ -84,11 +80,17 @@ typedef struct
     free(bitset_p);
 
 #define set_true(bitset_p, i)                                                                   \
+    ASSERT(i < bitset_p->size)                                                                  \
     bitset_p->packed_data[_word_index((i))] |= 1 << (WORD_SIZE - 1 - _internal_index((i)));
-#define set_false(bitset_p, i) bitset_p->packed_data[_word_index((i))] &= ~(1 << (WORD_SIZE - 1 - _internal_index((i))));
+#define set_false(bitset_p, i)                                                                  \
+    ASSERT(i < bitset_p->size)                                                                  \
+    bitset_p->packed_data[_word_index((i))] &= ~(1 << (WORD_SIZE - 1 - _internal_index((i))));
+
 // T: This macro doesn't end with ";" because the result of the operation computed in this macro is probably used in other expresions.
 // For example in assignment expressions. 
-#define get_bit(bitset, i) bitset->packed_data[_word_index((i))] & (1 << (WORD_SIZE - 1 - _internal_index((i))))
+#define get_bit(bitset, i)                                                                      \
+    ASSERT(i < bitset_p->size)                                                                  \
+    bitset->packed_data[_word_index((i))] & (1 << (WORD_SIZE - 1 - _internal_index((i))))
 
 #define all_true(bitset_p)                              \
     {                                                   \
@@ -108,6 +110,7 @@ typedef struct
 // T: NOTE this operation assume that bitset_1 and bitset_2 have the same size
 #define and(bitset_1, bitset_2)                                                                  \
     {                                                                                            \
+        ASSERT(bitset_1->size == bitset_2->size)                                                 \
         for(int i = 0; i < bitset_1->capacity; i++)                                              \
         {                                                                                        \
             bitset_1->packed_data[i] &= bitset_2->packed_data[i];                                \
@@ -117,6 +120,7 @@ typedef struct
 // T: NOTE this operation assume that biset_1 and bitset_2 have the same size
 #define or(bitset_1, bitset_2)                                                                          \
     {   \
+        ASSERT(bitset_1->size == bitset_2->size) \
         for(int i = 0; i < bitset_1->capacity; i++) \
         {   \
             bitset_1->packed_data[i] |= bitset_2->packed_data[i];   \

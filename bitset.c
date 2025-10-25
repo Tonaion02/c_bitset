@@ -20,7 +20,6 @@ void print_word_bitset(WORD_TYPE word)
 // T: TODO check if this method works
 void print_bitset(Bitset *bitset_p)
 {
-    printf("size in word bitset: %d\n", bitset_p->capacity);
     for(int i = 0; i < bitset_p->capacity; i++)
     {
         for(int j = WORD_SIZE -1; j >= 0; j--)

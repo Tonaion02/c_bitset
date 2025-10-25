@@ -25,7 +25,7 @@ This is detail probably will be fixed with the xperiment of predefined_bitset.
 The WORD_TYPE is set of default to char.
 
 ## Examples
-Here we have some examples
+Here we have an example that show the most of the operations that are possible to make in the current version of Bitset
 ``` C
 #include <stdio.h>
 #include "bitset.h"
@@ -62,6 +62,10 @@ int main(int argc, char **argv)
 
     // Get the value of i-th bit and print it
     printf("%d\n", get_bit(bitset, i));
+
+    // Free the memory occupied by the bitset
+    // WARNING this make sense only because we are allocating on the heap
+    free_bitset(bitset);
 
     return 0;
 }
