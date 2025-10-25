@@ -1,6 +1,5 @@
 #ifndef _BITSET
 #define _BITSET
-#include <stdlib.h>
 
 
 
@@ -25,7 +24,13 @@
 // - Probably there is a great problem with the fact that i can't use the numbers that i am using
 // - Probably we don't need a .c, so we don't use it
 // - Add some assert to check some conditions in debug mode(controlled by some macro)
+// - Add some operations:
+//      - Give the possibility to enlarge the bitset, so to extend the bitset out of the current size.
+//      - Create a macro to copy an entire bitset from an existing bitset.
+//      - Create a macro to allocate the bitset on the stack.
 //==================================================================================================================================
+
+
 
 // T: NOTE I Inserted the guard on WORD_TYPE. In this way, if WORD_TYPE is already defined by the user outside 
 // this file, we don't ovverride the choice of the user. 
@@ -55,30 +60,35 @@ typedef struct
 
 
 // T: WARNING private macro
-// T: This macro is used to access the  
+// T: This macro is used to access the word where the i-th bit is contained
 #define _word_index(i) i / WORD_SIZE
-#define _internal_index(i) i % WORD_SIZE  
+// T: WARNING private macro
+// T: This macro is used to access the correct position of a WORD in the bitset
+#define _internal_index(i) i % WORD_SIZE
+// T: WARNING private macro
+// T: This macro is used to specify the function that is used to allocate memory.
+// Can be useful to easily adapt this .h to all the platform where the malloc is not defined
+#define _allocate malloc
 
 // T: Default allocation of a bitset is made on the heap.
 // T: TODO try to fix the fact that the allocation of biset is made only on the heap. Give the possibility to chose where we want to allocate the bitset.
 #define create_bitset(bitset_p, _size)                                              \
     {                                                                               \
         int t = _size / WORD_SIZE + (int)((_size % WORD_SIZE) >= 1);                \
-        bitset_p = (Bitset*)malloc(sizeof(Bitset) + t * sizeof(WORD_TYPE));         \
+        bitset_p = (Bitset*) _allocate(sizeof(Bitset) + t * sizeof(WORD_TYPE));         \
         bitset_p->size = _size;                                                     \
         bitset_p->capacity = t;                                                     \
     } 
-                                                      
+                                   
 #define free_bitset(bitset_p)   \
-    free(bitset_p);             \
-    bitset_p->size = 0;         \
-    bitset_p->capacity = 0;
+    free(bitset_p);
 
-#define set_true(bitset_p, i) bitset_p->packed_data[_word_index((i))] |= 1 << (WORD_SIZE - 1 - _internal_index((i)));
+#define set_true(bitset_p, i)                                                                   \
+    bitset_p->packed_data[_word_index((i))] |= 1 << (WORD_SIZE - 1 - _internal_index((i)));
 #define set_false(bitset_p, i) bitset_p->packed_data[_word_index((i))] &= ~(1 << (WORD_SIZE - 1 - _internal_index((i))));
 // T: This macro doesn't end with ";" because the result of the operation computed in this macro is probably used in other expresions.
 // For example in assignment expressions. 
-#define get(bitset, i) bitset->packed_data[_word_index((i))] & (1 << (WORD_SIZE - 1 - _internal_index((i))))
+#define get_bit(bitset, i) bitset->packed_data[_word_index((i))] & (1 << (WORD_SIZE - 1 - _internal_index((i))))
 
 #define all_true(bitset_p)                              \
     {                                                   \
@@ -94,6 +104,32 @@ typedef struct
             bitset_p->packed_data[i] &= 0;              \
         }                                               \
     }
+
+// T: NOTE this operation assume that bitset_1 and bitset_2 have the same size
+#define and(bitset_1, bitset_2)                                                                  \
+    {                                                                                            \
+        for(int i = 0; i < bitset_1->capacity; i++)                                              \
+        {                                                                                        \
+            bitset_1->packed_data[i] &= bitset_2->packed_data[i];                                \
+        }                                                                                        \
+    }
+
+// T: NOTE this operation assume that biset_1 and bitset_2 have the same size
+#define or(bitset_1, bitset_2)                                                                          \
+    {   \
+        for(int i = 0; i < bitset_1->capacity; i++) \
+        {   \
+            bitset_1->packed_data[i] |= bitset_2->packed_data[i];   \
+        }   \
+    }
+
+#define not(bitset_p)                                                                           \
+    {\
+        for(int i = 0; i < bitset_p->capacity; i++)\
+        {\
+            bitset_p->packed_data[i] = ~bitset_p->packed_data[i];\
+        }\
+    } 
 
 void print_word_bitset(WORD_TYPE word);
 void print_bitset(Bitset *bitset_p);
