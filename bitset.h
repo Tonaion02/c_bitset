@@ -15,11 +15,7 @@
 // TO-DO:
 // - Add a macro(or at least an example) that brings you possibility to handle allocation of memory outside of this function
 // - Give possibility to allocate this struct on the stack
-// - Check if macro WORD_SIZE is a problem
-// - Check if there are problem in re-defining the macro WORD_TYPE
-// - Probably there is a great problem with the fact that i can't use the numbers that i am using
-// - Probably we don't need a .c, so we don't use it
-// - Add some assert to check some conditions in debug mode(controlled by some macro)
+ // - Probably there is a great problem with the fact that i can't use the numbers that i am using
 // - Add some operations:
 //      - Give the possibility to enlarge the bitset, so to extend the bitset out of the current size.
 //      - Create a macro to copy an entire bitset from an existing bitset.
@@ -135,8 +131,31 @@ typedef struct
         }\
     } 
 
-void print_word_bitset(WORD_TYPE word);
-void print_bitset(Bitset *bitset_p);
+#define print_word_bitset(word) \
+    { \
+        int i; \
+        for(i = (sizeof(WORD_TYPE) * 8) -1; i >= 0; i--) \
+        { \
+        int b = word & (1 << i);   \
+        printf("%d", (int)(b != 0)); \
+        } \
+    } 
+
+#define print_bitset(bitset_p) \
+    { \
+        for(int i = 0; i < bitset_p->capacity; i++) \
+        { \
+            for(int j = WORD_SIZE -1; j >= 0; j--) \
+            {   \
+                if(i * WORD_SIZE + j < bitset_p->size) \
+                { \
+                    int b = bitset_p->packed_data[i] & (1 << _internal_index(j)); \
+                    printf("%d", (int)(b != 0));    \
+                } \
+            } \
+            printf("\n"); \
+        } \
+    }
 //==================================================================================================================================
 // BITSET
 //==================================================================================================================================
