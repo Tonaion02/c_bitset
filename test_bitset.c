@@ -81,5 +81,12 @@ int main()
     not(p);
     print_bitset(p);
 
+    all_true(p);
+    printf("\n");
+    print_bitset(p);
+    set_bit(p, 3, 0);
+    printf("\n");
+    print_bitset(p);
+
     return 0;
 }
