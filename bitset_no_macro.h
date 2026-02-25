@@ -22,12 +22,16 @@
 //
 //
 // TO-DO:
-// - Add a macro(or at least an example) that brings you possibility to handle allocation of memory outside of this function
-// - Probably there is a great problem with the fact that i can't use the numbers that i am using
-// - Add some operations:
-//      - Give the possibility to enlarge the bitset, so to extend the bitset out of the current size.
-//      - Create a macro to copy an entire bitset from an existing bitset.
-//      - Create a macro to allocate the bitset on the stack.
+// - Add the missing operations: print_word_bitset
+// - Add the possibility to extend the current bitset, like an std::vector
+// - Add an operation to copy bitset
+// - Add give the user more freedom for allocation of memory: possibility to allocate on the stack or to make a total custom allocation
+// - Give to the user the possibility to allocate in a single piece of memory size, capacity and packed_data, or 
+// to allocate (size, capacity) and then packed_data
+// - Re-write the doc
+// Things to check:
+// - Check if prints only the bits for size and not the entire capacity
+// - Check if all the ASSERT works
 //==================================================================================================================================
 #ifndef _BITSET
 #define _BITSET
@@ -71,7 +75,6 @@ CBitSet* create_bitset(uint32_t _size)
 {
     uint32_t capacity = _size_in_word(_size);
     CBitSet* p = (CBitSet*)_allocate_mem(sizeof(CBitSet) + sizeof(WORD_TYPE) * capacity);
-    // CBitSet* p = (CBitSet*)calloc(1, sizeof(CBitSet) + sizeof(WORD_TYPE) * capacity);
     ASSERT(p != NULL)
     p->capacity = capacity;
     p->size = _size;
@@ -87,24 +90,28 @@ void free_bitset(CBitSet* bitset)
 void set_true(CBitSet* bitset, uint32_t i)
 {
     ASSERT(i < bitset->size)
-    // bitset->packed_data[_word_index(i)] |= (1 << (WORD_SIZE - 1 - _internal_index(i)));
     bitset->packed_data[_word_index(i)] |= (1 << (_internal_index(i)));
 }
 
 void set_false(CBitSet* bitset, uint32_t i)
 {
     ASSERT(i < bitset->size)
-    // bitset->packed_data[_word_index(i)] &= ~(1 << (WORD_SIZE - 1 - _internal_index(i)));
     bitset->packed_data[_word_index(i)] &= ~(1 << (_internal_index(i)));
 }
 
+// T: TODO Think if it is the best type to return
+uint8_t get_bit(CBitSet* bitset, uint32_t i)
+{
+    ASSERT(i < bitset->size)
+    return bitset->packed_data[_word_index(i)] & (1 << _internal_index(i));
+}
+
+// T: TODO Think if it is the best type to represent a bit
 void set_bit(CBitSet* bitset, uint32_t i, uint8_t bit)
 {
     ASSERT(i < bitset->size)
     // T: It's necessary this assert, set_bit work only with bit = 0 or bit = 1.
     ASSERT(bit == 1 || bit == 0)
-    // bitset->packed_data[_word_index(i)] |= (bit << (WORD_SIZE - 1 - _internal_index(i)));
-    // bitset->packed_data[_word_index(i)] &= ~(bit << (WORD_SIZE - 1 - _internal_index(i)));
     bitset->packed_data[_word_index(i)] |= (bit << (_internal_index(i)));
     bitset->packed_data[_word_index(i)] &= ~(!bit << (_internal_index(i)));
 }
@@ -127,9 +134,45 @@ void all_false(CBitSet* bitset)
     }
 }
 
-// T: NOTE Possible problem, indexes must be signed integer, but capacity and size are unsigned 
+// T: TODO Think about the fact that probably it's useful to implement
+// "and" and "or" operations even for bitset of different size.
+// T: and method perform the an and bit a bit operation between the first bitset
+// and the second bitset.
+// T: The result of the and operation is stored in the first bitset, the second
+// bitset isn't modified at all.
+void and(CBitSet* bitset1, CBitSet* bitset2)
+{
+    ASSERT(bitset1->size == bitset2->size)
+    for(uint32_t i = 0; i < _size_in_word(bitset1->size); i++)
+    {
+        bitset1->packed_data[i] &= bitset2->packed_data[i];
+    }
+}
+
+void or(CBitSet* bitset1, CBitSet* bitset2)
+{
+    ASSERT(bitset1->size == bitset2->size)
+    for(uint32_t i = 0; i < _size_in_word(bitset1->size); i++)
+    {
+        bitset1->packed_data[i] |= bitset2->packed_data[i];
+    }    
+}
+
+void not(CBitSet* bitset)
+{
+    // T: OPT Probably it's not necessary to set negate even the bits that are out of size
+    for(uint32_t i = 0; i < bitset->capacity; i++)
+    {
+        bitset->packed_data[i] = ~bitset->packed_data[i];
+    }
+}
+
 void print_bitset(CBitSet* bitset)
 {
+    // T: NOTE Indexes i,j are handled deciding to go from 1..capacity or 1..WORD_SIZE,
+    // even if the valid values goes from 0..(capacity-1) and 0..(WORD_SIZE-1) because
+    // in this way I can define them like uint32_t and match with indexes the types
+    // of capacity and size field of the bitset.
     for(uint32_t i = bitset->capacity; i >= 1; i--)
     {
         for(uint32_t j = WORD_SIZE; j >=1; j--)
@@ -142,20 +185,6 @@ void print_bitset(CBitSet* bitset)
         }
         printf("\n");
     }
-
-    // T: Printing in another order
-    // for(uint32_t i = 0; i < bitset->capacity; i++)
-    // {
-    //     for(int32_t j = WORD_SIZE - 1; j >= 0; j--)
-    //     {
-    //         if(i * WORD_SIZE + j < bitset->size)
-    //         {
-    //             int b = bitset->packed_data[i] & (1 << j);
-    //             printf("%d", (int)(b != 0));
-    //         }
-    //     }
-    //     printf("\n");
-    // }
 }
 
 #endif
