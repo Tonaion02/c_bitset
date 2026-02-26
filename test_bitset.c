@@ -34,34 +34,16 @@ int main()
     printf("print bitset\n");
     print_bitset(p);
 
-    // const unsigned int n2 = 10;
-    // // const unsigned int n_char_words_2 = 2 * 4 + n2 * sizeof(WORD_TYPE);
-    // // char buffer2[n_char_words_2];
-    // // Bitset *p_2 = (Bitset*)buffer2;
-    // // p->capacity = n2;
-    // // p->size = n2 * WORD_SIZE;
+    CBitSet *p2 = clone_bitset(p);
+    printf("capacity of p2: %d\n", p2->capacity);
+    printf("size of p2: %d\n", p2->size);
+    print_bitset(p2);
+    printf("\n");
 
-    // CBitSet *p_2 = create_bitset(n2 * WORD_SIZE);
-
-    // all_true(p_2);
-    // printf("and between p, p_2\n");
-    // and(p, p_2);
-    // print_bitset(p);
-
-    // printf("or between p, p_2\n");
-    // or(p, p_2);
-    // print_bitset(p);
-    
-    // printf("not of p\n");
-    // not(p);
-    // print_bitset(p);
-
-    // all_true(p);
-    // printf("\n");
-    // print_bitset(p);
-    // set_bit(p, 3, 0);
-    // printf("\n");
-    // print_bitset(p);
+    // p = resize_bitset(p, (n * WORD_SIZE) - 12);
+    p = resize_bitset(p, 7);
+    printf("Resize bitset\n");
+    print_bitset(p);
 
     return 0;
 }

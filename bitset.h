@@ -21,11 +21,11 @@
 // memory on the heap. You can do that redefining the macros: _allocate_mem, _free_mem.  
 //
 //
+//
 // TO-DO:
 // - Add the missing operations: print_word_bitset
-// - Add the possibility to extend the current bitset, like an std::vector
-// - Add an operation to copy bitset
-// - Add give the user more freedom for allocation of memory: possibility to allocate on the stack or to make a total custom allocation
+// - Add an operation to copy a bitset
+// - Give the user more freedom for allocation of memory: possibility to allocate on the stack or to make a total custom allocation
 // - Give to the user the possibility to allocate in a single piece of memory size, capacity and packed_data, or 
 // to allocate (size, capacity) and then packed_data
 // - Re-write the doc
@@ -41,6 +41,7 @@
 // T: TODO It's necessary to check if it is possible to remove this include from here.
 #include <stdint.h> 
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include "custom_assert.h"
 
@@ -107,9 +108,47 @@ CBitSet* create_bitset(uint32_t _size)
     return p;
 }
 
-void free_bitset(CBitSet* bitset)
+void delete_bitset(CBitSet* bitset)
 {
+    ASSERT(bitset != NULL)
+
     _free_mem(bitset);
+}
+
+CBitSet* clone_bitset(CBitSet* bitset)
+{
+    ASSERT(bitset != NULL)
+    
+    // T: OPT Probably it's not necessary to allocate for capacity, we can allocate only the memory that is necessary
+    CBitSet* bitset_cp = (CBitSet*)_allocate_mem(sizeof(CBitSet) + sizeof(WORD_TYPE) * bitset->capacity);
+    // T: TODO Check if there are other methods to perform copy of memmory
+    memcpy(bitset_cp->packed_data, bitset->packed_data, bitset->capacity);
+    bitset_cp->size = bitset->size;
+    bitset_cp->capacity = bitset->capacity;
+
+    return bitset_cp;
+}
+
+// T: Probably this idea of returning the new pointer, is a little bit error prone
+CBitSet* resize_bitset(CBitSet* bitset, uint32_t new_size)
+{
+    ASSERT(bitset != NULL)
+
+    uint32_t new_capacity = _size_in_word(new_size);
+    // T: DEBUG
+    // printf("new_cap: %d\n", new_capacity);
+
+    CBitSet* new_bitset = (CBitSet*)_allocate_mem(sizeof(CBitSet) + sizeof(WORD_TYPE) * new_capacity);
+    
+    uint32_t min_cap = new_capacity;
+    if(min_cap > bitset->capacity)
+        min_cap = bitset->capacity;
+
+    memcpy(new_bitset->packed_data, bitset->packed_data, min_cap);
+    new_bitset->size = new_size;
+    new_bitset->capacity = new_capacity;
+
+    return new_bitset;
 }
 
 void set_true(CBitSet* bitset, uint32_t i)
@@ -212,4 +251,9 @@ void print_bitset(CBitSet* bitset)
     }
 }
 
+
+
 #endif
+//==================================================================================================================================
+// BITSET
+//==================================================================================================================================
